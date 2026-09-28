@@ -1,0 +1,7 @@
+{
+  "name": "রক্তবন্ধু - RoktoBondhu Blood Network",
+  "description": "বাংলাদেশের নির্ভরযোগ্য সামাজিক রক্তদান প্ল্যাটফর্ম ও জরুরি রক্তদাতা ডিরেক্টরি। জীবন বাঁচান, রক্ত দিন।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
