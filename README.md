@@ -2,6 +2,21 @@
 
 একটি আধুনিক, জীবন রক্ষাকারী ও নির্ভরযোগ্য রক্তদান সামাজিক প্ল্যাটফর্ম ও জরুরি রক্তদাতা ডিরেক্টরি।
 
+## 🌐 GitHub Pages Deployment Guide
+
+### কেন পূর্বে সাদা ফাঁকা পেজ (Blank White Page) দেখাত?
+GitHub Pages সাধারণত একটি সাব-পাথে হোস্ট হয় (যেমন `https://<username>.github.io/<repo-name>/`)। ডিফল্টভাবে Vite-এর `base` পাথ থাকে `/` (রুট পাথ), ফলে ব্রাউজার জাভাস্ক্রিপ্ট এবং সিএসএস অ্যাসেটগুলো `https://<username>.github.io/assets/...` থেকে খুঁজতে গিয়ে ৪MD (404 Not Found) পেত এবং পৃষ্ঠাটি সাদা হয়ে যেত। 
+
+আমরা `vite.config.ts`-এ `base: './'` (আপেক্ষিক পাথ) কনফিগার করেছি, ফলে যেকোনো সাব-পাথ বা রিপোজিটরি নামেই ফাইলগুলো নিখুঁতভাবে লোড হবে।
+
+### GitHub Pages-এ সক্রিয় করার সহজ নিয়ম:
+1. আপনার গিটহাব রিপোজিটরির **Settings** ট্যাবে যান।
+2. বাঁপাশের মেনু থেকে **Pages** অপশনে ক্লিক করুন।
+3. **Build and deployment > Source** ড্রপডাউন থেকে **GitHub Actions** নির্বাচন করুন।
+4. আমরা ইতিমধ্যেই `.github/workflows/deploy.yml` যুক্ত করে দিয়েছি। এখন যেকোনো সময় `main` ব্রাঞ্চে কোড পুশ করলেই স্বয়ংক্রিয়ভাবে গিটহাব পেজেস-এ সাইট লাইভ হয়ে যাবে!
+
+---
+
 ## 🚀 Vercel Deployment Guide
 
 This project is configured and fully ready to deploy to [Vercel](https://vercel.com).
