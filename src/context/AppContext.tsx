@@ -15,6 +15,7 @@ import {
   INITIAL_HOSPITALS,
   INITIAL_STORIES,
 } from '../data/mockData';
+import { safeStorage } from '../utils/storage';
 
 interface AppContextType {
   donors: Donor[];
@@ -72,26 +73,31 @@ const LOCAL_STORAGE_PREFIX = 'roktobondhu_';
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // 1. Language
   const [language, setLanguageState] = useState<'bn' | 'en'>(() => {
-    return (localStorage.getItem(LOCAL_STORAGE_PREFIX + 'lang') as 'bn' | 'en') || 'bn';
+    const saved = safeStorage.getItem<'bn' | 'en'>(LOCAL_STORAGE_PREFIX + 'lang', 'bn');
+    return saved === 'en' ? 'en' : 'bn';
   });
 
   const setLanguage = (lang: 'bn' | 'en') => {
     setLanguageState(lang);
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'lang', lang);
+    safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'lang', lang);
   };
 
   // 2. Dark Mode
   const [darkMode, setDarkMode] = useState<boolean>(() => {
-    return localStorage.getItem(LOCAL_STORAGE_PREFIX + 'theme') === 'dark';
+    return safeStorage.getItem<string>(LOCAL_STORAGE_PREFIX + 'theme', 'light') === 'dark';
   });
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem(LOCAL_STORAGE_PREFIX + 'theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem(LOCAL_STORAGE_PREFIX + 'theme', 'light');
+    try {
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+        safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'theme', 'light');
+      }
+    } catch {
+      // ignore
     }
   }, [darkMode]);
 
@@ -99,47 +105,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 3. Donors
   const [donors, setDonors] = useState<Donor[]>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_PREFIX + 'donors');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return INITIAL_DONORS;
-      }
+    const saved = safeStorage.getItem<Donor[]>(LOCAL_STORAGE_PREFIX + 'donors', null);
+    if (saved && Array.isArray(saved) && saved.length > 0) {
+      return saved;
     }
     return INITIAL_DONORS;
   });
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'donors', JSON.stringify(donors));
+    safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'donors', donors);
   }, [donors]);
 
   // 4. Requests
   const [requests, setRequests] = useState<BloodRequest[]>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_PREFIX + 'requests');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return INITIAL_REQUESTS;
-      }
+    const saved = safeStorage.getItem<BloodRequest[]>(LOCAL_STORAGE_PREFIX + 'requests', null);
+    if (saved && Array.isArray(saved) && saved.length > 0) {
+      return saved;
     }
     return INITIAL_REQUESTS;
   });
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'requests', JSON.stringify(requests));
+    safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'requests', requests);
   }, [requests]);
 
   // 5. Current User
   const [currentUser, setCurrentUser] = useState<Donor | null>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_PREFIX + 'current_user');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return null;
-      }
+    const saved = safeStorage.getItem<Donor>(LOCAL_STORAGE_PREFIX + 'current_user', null);
+    if (saved && typeof saved === 'object' && saved.id) {
+      return saved;
     }
     // Default to pre-seeded donor-1 for great initial demo experience
     return INITIAL_DONORS[0];
@@ -147,25 +141,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem(LOCAL_STORAGE_PREFIX + 'current_user', JSON.stringify(currentUser));
+      safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'current_user', currentUser);
     } else {
-      localStorage.removeItem(LOCAL_STORAGE_PREFIX + 'current_user');
+      safeStorage.removeItem(LOCAL_STORAGE_PREFIX + 'current_user');
     }
   }, [currentUser]);
 
   // 6. Admin
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    return localStorage.getItem(LOCAL_STORAGE_PREFIX + 'is_admin') === 'true';
+    return safeStorage.getItem<string>(LOCAL_STORAGE_PREFIX + 'is_admin', 'false') === 'true';
   });
 
   const loginAsAdmin = () => {
     setIsAdmin(true);
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'is_admin', 'true');
+    safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'is_admin', 'true');
   };
 
   const logoutAdmin = () => {
     setIsAdmin(false);
-    localStorage.removeItem(LOCAL_STORAGE_PREFIX + 'is_admin');
+    safeStorage.removeItem(LOCAL_STORAGE_PREFIX + 'is_admin');
   };
 
   // 7. Active Tab

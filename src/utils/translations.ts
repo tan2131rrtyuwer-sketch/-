@@ -1,15 +1,22 @@
 // Bengali numbers & date utilities
-export const toBengaliNumber = (num: number | string): string => {
+export const toBengaliNumber = (num: number | string | undefined | null): string => {
+  if (num === undefined || num === null) return '০';
   const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
   return String(num).replace(/[0-9]/g, w => bnDigits[+w]);
 };
 
-export const getDaysDifference = (fromDate: string): number => {
+export const getDaysDifference = (fromDate?: string | null): number => {
   if (!fromDate) return 999;
-  const from = new Date(fromDate);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - from.getTime());
-  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  try {
+    const from = new Date(fromDate);
+    if (isNaN(from.getTime())) return 999;
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - from.getTime());
+    const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return isNaN(days) ? 999 : days;
+  } catch {
+    return 999;
+  }
 };
 
 export const isEligibleToDonate = (lastDonationDate?: string): { eligible: boolean; daysRemaining: number; daysPassed: number } => {
@@ -21,7 +28,7 @@ export const isEligibleToDonate = (lastDonationDate?: string): { eligible: boole
   if (daysPassed >= requiredCooldown) {
     return { eligible: true, daysRemaining: 0, daysPassed };
   } else {
-    return { eligible: false, daysRemaining: requiredCooldown - daysPassed, daysPassed };
+    return { eligible: false, daysRemaining: Math.max(0, requiredCooldown - daysPassed), daysPassed };
   }
 };
 

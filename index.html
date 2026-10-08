@@ -14,7 +14,79 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body class="bg-neutral-50 text-neutral-900 antialiased selection:bg-rose-500 selection:text-white">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback container that displays helpful instructions if JavaScript is blocked or cannot load -->
+      <div id="initial-loader" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; font-family: 'Hind Siliguri', 'Plus Jakarta Sans', sans-serif; background: #fafafa; color: #171717;">
+        <div style="max-width: 460px; width: 100%; text-align: center; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 16px; padding: 32px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+          <div style="font-size: 40px; margin-bottom: 12px;">🩸</div>
+          <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 8px 0; color: #e11d48;">রক্তবন্ধু - লোড হচ্ছে...</h2>
+          <p style="font-size: 13px; color: #737373; margin: 0 0 16px 0;">অনুগ্রহ করে অপেক্ষা করুন, অ্যাপ্লিকেশনটি প্রস্তুত হচ্ছে।</p>
+          <div style="width: 32px; height: 32px; border: 3px solid #fecdd3; border-top-color: #e11d48; border-radius: 50%; margin: 0 auto; animation: spin 0.8s linear infinite;"></div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+
+    <script>
+      (function() {
+        // 1. Detect direct local file opening (file:// protocol)
+        if (window.location.protocol === 'file:') {
+          var root = document.getElementById('root');
+          if (root) {
+            root.innerHTML = '' +
+              '<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: system-ui, -apple-system, sans-serif; background: #fff5f5; color: #1f2937;">' +
+                '<div style="max-width: 540px; width: 100%; background: #ffffff; border: 2px solid #fecaca; border-radius: 20px; padding: 28px; box-shadow: 0 10px 25px rgba(225,29,72,0.1); text-align: left;">' +
+                  '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">' +
+                    '<span style="font-size: 32px;">⚠️</span>' +
+                    '<div>' +
+                      '<h2 style="margin: 0; font-size: 18px; font-weight: bold; color: #b91c1c;">সরাসরি ফাইল ওপেন করা হয়েছে (file://)</h2>' +
+                      '<p style="margin: 2px 0 0; font-size: 12px; color: #6b7280;">লোকাল ওয়েব সার্ভার ছাড়া মডিউল স্ক্রিপ্ট রান হয় না</p>' +
+                    '</div>' +
+                  '</div>' +
+                  '<p style="font-size: 13px; line-height: 1.6; color: #374151; margin-bottom: 16px;">' +
+                    'আধুনিক ব্রাউজারগুলির সিকিউরিটি (CORS/ES Module) নিয়মের কারণে ডাবল-ক্লিক করে <code>file://</code> হিসেবে ওপেন করলে জাভাস্ক্রিপ্ট ব্লক হয়ে যায় এবং সাদা স্ক্রিন দেখায়।' +
+                  '</p>' +
+                  '<div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 16px; font-size: 13px;">' +
+                    '<strong style="color: #0f172a; display: block; margin-bottom: 8px;">সঠিকভাবে চালানোর ৩টি সহজ উপায়:</strong>' +
+                    '<div style="margin-bottom: 8px;"><b>১. টার্মিনালে রান করুন:</b><br><code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 12px;">npm run dev</code> অথবা <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 12px;">npm run preview</code></div>' +
+                    '<div style="margin-bottom: 8px;"><b>২. VS Code Live Server:</b><br>HTML ফাইলটিতে রাইট-ক্লিক করে <i>"Open with Live Server"</i> সিলেক্ট করুন।</div>' +
+                    '<div><b>৩. Vercel বা GitHub Pages:</b><br>অনলাইনে ফ্রিতে হোস্ট করে যেকোনো ডিভাইস থেকে দেখুন।</div>' +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+          }
+          return;
+        }
+
+        // 2. Timeout diagnostic: if still on initial-loader after 4 seconds
+        setTimeout(function() {
+          var loader = document.getElementById('initial-loader');
+          if (loader) {
+            loader.innerHTML = '' +
+              '<div style="max-width: 500px; width: 100%; text-align: left; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">' +
+                '<h3 style="font-size: 16px; font-weight: 700; color: #dc2626; margin: 0 0 10px 0;">লোড হতে সময় নিচ্ছে বা স্ক্রিপ্ট ব্লক হয়েছে</h3>' +
+                '<p style="font-size: 13px; color: #4b5563; line-height: 1.5; margin: 0 0 14px 0;">' +
+                  'যদি আপনি <b>GitHub Pages</b>-এ থাকেন, অনুগ্রহ করে নিশ্চিত করুন যে গিটহাব রিপোজিটরির <b>Settings &gt; Pages &gt; Build and deployment &gt; Source</b> অপশনে <b>GitHub Actions</b> নির্বাচন করা আছে।' +
+                '</p>' +
+                '<div style="display: flex; gap: 8px; flex-wrap: wrap;">' +
+                  '<button onclick="window.location.reload()" style="padding: 8px 14px; background: #e11d48; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">🔄 পুনরায় চেষ্টা করুন</button>' +
+                  '<a href="./dist/index.html" style="padding: 8px 14px; background: #f1f5f9; color: #334155; text-decoration: none; border-radius: 8px; font-size: 12px; font-weight: 600; display: inline-block;">📁 ./dist/ ফোল্ডার দেখুন</a>' +
+                '</div>' +
+              '</div>';
+          }
+        }, 4000);
+      })();
+    </script>
+
+    <noscript>
+      <div style="padding: 20px; text-align: center; font-family: sans-serif; background: #fee2e2; color: #991b1b;">
+        এই ওয়েবসাইটটি চালানোর জন্য ব্রাউজারে জাভাস্ক্রিপ্ট (JavaScript) সক্রিয় করা প্রয়োজন।
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
