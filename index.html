@@ -61,23 +61,36 @@
           return;
         }
 
-        // 2. Timeout diagnostic: if still on initial-loader after 4 seconds
+        // 2. Timeout diagnostic: if still on initial-loader after 3.5 seconds
         setTimeout(function() {
           var loader = document.getElementById('initial-loader');
           if (loader) {
             loader.innerHTML = '' +
-              '<div style="max-width: 500px; width: 100%; text-align: left; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">' +
-                '<h3 style="font-size: 16px; font-weight: 700; color: #dc2626; margin: 0 0 10px 0;">লোড হতে সময় নিচ্ছে বা স্ক্রিপ্ট ব্লক হয়েছে</h3>' +
-                '<p style="font-size: 13px; color: #4b5563; line-height: 1.5; margin: 0 0 14px 0;">' +
-                  'যদি আপনি <b>GitHub Pages</b>-এ থাকেন, অনুগ্রহ করে নিশ্চিত করুন যে গিটহাব রিপোজিটরির <b>Settings &gt; Pages &gt; Build and deployment &gt; Source</b> অপশনে <b>GitHub Actions</b> নির্বাচন করা আছে।' +
-                '</p>' +
-                '<div style="display: flex; gap: 8px; flex-wrap: wrap;">' +
-                  '<button onclick="window.location.reload()" style="padding: 8px 14px; background: #e11d48; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">🔄 পুনরায় চেষ্টা করুন</button>' +
-                  '<a href="./dist/index.html" style="padding: 8px 14px; background: #f1f5f9; color: #334155; text-decoration: none; border-radius: 8px; font-size: 12px; font-weight: 600; display: inline-block;">📁 ./dist/ ফোল্ডার দেখুন</a>' +
+              '<div style="max-width: 540px; width: 100%; text-align: left; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 28px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); font-family: system-ui, -apple-system, sans-serif;">' +
+                '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">' +
+                  '<div style="width: 42px; height: 42px; border-radius: 12px; background: #fee2e2; display: flex; align-items: center; justify-content: center; font-size: 22px;">🩸</div>' +
+                  '<div>' +
+                    '<h3 style="font-size: 17px; font-weight: 700; color: #b91c1c; margin: 0;">GitHub Pages সেটিংস পরিবর্তন প্রয়োজন</h3>' +
+                    '<p style="font-size: 12px; color: #64748b; margin: 2px 0 0;">React/Vite বিল্ড ছাড়া সরাসরি ব্রাউজারে রান হতে পারছে না</p>' +
+                  '</div>' +
+                '</div>' +
+                '<div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.6; color: #334155;">' +
+                  '<strong style="color: #0f172a; display: block; margin-bottom: 8px;">🛠️ ১ মিনিটে সমাধান করার নিয়ম:</strong>' +
+                  '<div style="margin-bottom: 6px;"><b>১.</b> GitHub-এ আপনার প্রজেক্ট রিপোজিটরির <b>Settings</b> ট্যাবে যান।</div>' +
+                  '<div style="margin-bottom: 6px;"><b>২.</b> বাম মেনু থেকে <b>Pages</b> অপশনে ক্লিক করুন।</div>' +
+                  '<div style="margin-bottom: 6px;"><b>৩.</b> <b>Build and deployment</b> সেকশনে <b>Source</b> ড্রপডাউনে <code>Deploy from a branch</code>-এর বদলে <b>GitHub Actions</b> নির্বাচন করুন।</div>' +
+                  '<div><b>৪.</b> ব্যাস! GitHub স্বয়ংক্রিয়ভাবে প্রজেক্ট বিল্ড করে লাইভ করে দেবে।</div>' +
+                '</div>' +
+                '<div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: #1e40af; line-height: 1.5;">' +
+                  '💡 <b>বিকল্প (সবচেয়ে সহজ):</b> <b>Vercel</b> (vercel.com)-এ গিয়ে রিপোজিটরিটি Import করুন, এটি কোনো ঝামেলা ছাড়াই স্বয়ংক্রিয়ভাবে ডিপ্লয় হয়ে যাবে।' +
+                '</div>' +
+                '<div style="display: flex; gap: 10px; align-items: center;">' +
+                  '<button onclick="window.location.reload()" style="padding: 9px 18px; background: #e11d48; color: #fff; border: none; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer;">🔄 রিলোড দিন</button>' +
+                  '<a href="https://github.com" target="_blank" rel="noreferrer" style="padding: 9px 16px; background: #f1f5f9; color: #334155; text-decoration: none; border-radius: 9px; font-size: 13px; font-weight: 600;">GitHub খুলুন</a>' +
                 '</div>' +
               '</div>';
           }
-        }, 4000);
+        }, 3500);
       })();
     </script>
 
