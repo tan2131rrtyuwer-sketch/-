@@ -20,6 +20,13 @@ import {
   ChevronDown,
   RefreshCw,
 } from 'lucide-react';
+import {
+  FbSearch,
+  FbVerified,
+  FbDots,
+  FbMessenger,
+  FbLogo,
+} from '../components/FacebookIcons';
 
 export const SearchDonorsView: React.FC = () => {
   const {
@@ -411,12 +418,12 @@ export const SearchDonorsView: React.FC = () => {
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <h3 className="text-base font-bold text-neutral-900 dark:text-white group-hover:text-rose-600 transition-colors">
+                          <h3 className="text-base font-bold text-neutral-900 dark:text-white group-hover:text-[#1877F2] transition-colors">
                             {donor.name}
                           </h3>
                           {donor.isVerified && (
-                            <span title="Verified Donor">
-                              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                            <span title="Facebook Verified Donor">
+                              <FbVerified className="w-4 h-4 text-[#1877F2]" />
                             </span>
                           )}
                         </div>
@@ -427,13 +434,13 @@ export const SearchDonorsView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Report action button */}
+                    {/* Facebook dots action button */}
                     <button
                       onClick={() => setReportModalDonor(donor)}
-                      className="p-1 text-neutral-400 hover:text-rose-600 rounded transition-colors"
-                      title={language === 'bn' ? 'ভুয়া প্রোফাইল রিপোর্ট' : 'Report profile'}
+                      className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
+                      title={language === 'bn' ? 'প্রোফাইল মেনু ও রিপোর্ট' : 'Profile menu'}
                     >
-                      <Flag className="h-3.5 w-3.5" />
+                      <FbDots size={18} />
                     </button>
                   </div>
 
@@ -489,11 +496,11 @@ export const SearchDonorsView: React.FC = () => {
                   )}
                 </div>
 
-                {/* Card Actions: Call, WhatsApp, Certificate */}
+                {/* Card Actions: Call, WhatsApp / Messenger, Certificate */}
                 <div className="mt-5 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
                   <a
                     href={`tel:${donor.phone}`}
-                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 py-2.5 text-xs font-bold text-white hover:bg-rose-700 active:scale-95 transition-all shadow-sm shadow-rose-600/20"
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-full bg-rose-600 py-2.5 text-xs font-bold text-white hover:bg-rose-700 active:scale-95 transition-all shadow-xs"
                   >
                     <Phone className="h-3.5 w-3.5" />
                     <span>{language === 'bn' ? 'সরাসরি কল' : 'Call'}</span>
@@ -503,16 +510,16 @@ export const SearchDonorsView: React.FC = () => {
                     href={getWhatsAppLink(donor)}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-2.5 px-3 text-xs font-bold text-white transition-colors shadow-sm"
-                    title="Send WhatsApp message"
+                    className="flex items-center justify-center gap-1.5 rounded-full bg-[#1877F2] hover:bg-[#166fe5] py-2.5 px-3.5 text-xs font-bold text-white transition-colors shadow-xs"
+                    title="মেসেঞ্জার ও হোয়াটসঅ্যাপে যোগাযোগ করুন"
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    <span className="hidden sm:inline">WhatsApp</span>
+                    <FbMessenger size={16} />
+                    <span className="hidden sm:inline">মেসেজ</span>
                   </a>
 
                   <button
                     onClick={() => setCertificateModalDonor(donor)}
-                    className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    className="p-2.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                     title={language === 'bn' ? 'সম্মাননা সনদপত্র দেখুন' : 'View Certificate'}
                   >
                     <Award className="h-4 w-4 text-amber-500" />

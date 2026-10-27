@@ -2,21 +2,25 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   Droplet,
-  Search,
-  AlertCircle,
-  Building2,
-  Heart,
   User,
   Shield,
   Sun,
   Moon,
-  Globe,
-  Bell,
-  Menu,
-  X,
   LogOut,
-  PlusCircle,
+  Plus,
+  ChevronDown,
 } from 'lucide-react';
+import {
+  FbHome,
+  FbFriends,
+  FbEmergency,
+  FbMarketplace,
+  FbStories,
+  FbMessenger,
+  FbBell,
+  FbSearch,
+  FbVerified,
+} from './FacebookIcons';
 import { toBengaliNumber } from '../utils/translations';
 
 export const Navbar: React.FC = () => {
@@ -38,328 +42,372 @@ export const Navbar: React.FC = () => {
     setAuthModalOpen,
     setAuthModalTab,
     setPostRequestModalOpen,
+    navigateToSearchWithFilters,
   } = useApp();
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [messengerModalOpen, setMessengerModalOpen] = useState(false);
+  const [headerSearchQuery, setHeaderSearchQuery] = useState('');
 
   const unreadNotifs = notifications.filter(n => !n.read).length;
 
   const navItems = [
-    { id: 'home', labelBn: 'হোম', labelEn: 'Home', icon: Heart },
-    { id: 'search', labelBn: 'রক্তদাতা খুঁজুন', labelEn: 'Find Donors', icon: Search },
-    { id: 'requests', labelBn: 'জরুরি অনুরোধ', labelEn: 'Urgent Requests', icon: AlertCircle, badge: true },
-    { id: 'hospitals', labelBn: 'ব্লাড ব্যাংক', labelEn: 'Blood Banks', icon: Building2 },
-    { id: 'stories', labelBn: 'সফলতার গল্প', labelEn: 'Stories', icon: Heart },
+    { id: 'home', labelBn: 'হোম', labelEn: 'Home', Icon: FbHome },
+    { id: 'search', labelBn: 'রক্তদাতা', labelEn: 'Donors', Icon: FbFriends },
+    { id: 'requests', labelBn: 'জরুরি অনুরোধ', labelEn: 'Requests', Icon: FbEmergency, badge: true },
+    { id: 'hospitals', labelBn: 'ব্লাড ব্যাংক', labelEn: 'Blood Banks', Icon: FbMarketplace },
+    { id: 'stories', labelBn: 'গল্প ও ফিড', labelEn: 'Stories', Icon: FbStories },
   ];
 
+  const handleQuickSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (headerSearchQuery.trim()) {
+      navigateToSearchWithFilters('', headerSearchQuery.trim());
+      setHeaderSearchQuery('');
+    } else {
+      setActiveTab('search');
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/95 transition-colors">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Zone 1: Brand title wordmark */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              setActiveTab('home');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="group flex items-center gap-2 text-left focus:outline-none"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-600 to-red-500 text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform">
-              <Droplet className="h-6 w-6 fill-white stroke-white" />
-            </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white flex items-center gap-1">
-                {language === 'bn' ? 'রক্তবন্ধু' : 'RoktoBondhu'}
-              </span>
-              <span className="block text-[11px] font-medium text-rose-600 dark:text-rose-400 -mt-1">
-                {language === 'bn' ? 'সামাজিক রক্তদান নেটওয়ার্ক' : 'Blood Donor Network'}
-              </span>
-            </div>
-          </button>
-        </div>
-
-        {/* Zone 2: Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-          {navItems.map(item => {
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className={`relative px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                  isActive
-                    ? 'text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/40'
-                    : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                }`}
-              >
-                <span>{language === 'bn' ? item.labelBn : item.labelEn}</span>
-                {item.badge && (
-                  <span className="inline-block h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Zone 3: Primary Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Post Blood Request CTA */}
-          <button
-            onClick={() => setPostRequestModalOpen(true)}
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 active:scale-95 transition-all whitespace-nowrap"
-          >
-            <PlusCircle className="h-4 w-4" />
-            <span>{language === 'bn' ? 'রক্তের অনুরোধ' : 'Request Blood'}</span>
-          </button>
-
-          {/* Language Toggle */}
-          <button
-            onClick={() => setLanguage(language === 'bn' ? 'en' : 'bn')}
-            className="flex items-center gap-1 rounded-lg border border-neutral-200 dark:border-neutral-800 px-2.5 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-            title="Change language"
-          >
-            <Globe className="h-3.5 w-3.5 text-neutral-500" />
-            <span>{language === 'bn' ? 'EN' : 'বাং'}</span>
-          </button>
-
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="rounded-lg p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800 transition-colors"
-            title="Toggle theme"
-            aria-label="Toggle theme"
-          >
-            {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
-
-          {/* Notifications Dropdown */}
-          <div className="relative">
+    <>
+      <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/95 transition-colors shadow-xs">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:px-6">
+          {/* Zone 1: Facebook-Style Left Brand & Search Input */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
-              onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
-              className="relative rounded-lg p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800 transition-colors"
-              title="Notifications"
+              onClick={() => {
+                setActiveTab('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="group flex items-center gap-2 text-left focus:outline-none"
+              title="রক্তবন্ধু হোম"
             >
-              <Bell className="h-4 w-4" />
-              {unreadNotifs > 0 && (
-                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white">
-                  {language === 'bn' ? toBengaliNumber(unreadNotifs) : unreadNotifs}
+              {/* Facebook-style circle logo badge */}
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-[#1877F2] to-rose-600 text-white shadow-md group-hover:scale-105 transition-transform">
+                <Droplet className="h-5 w-5 fill-white stroke-white" />
+              </div>
+              <div className="hidden sm:block">
+                <span className="text-lg font-black tracking-tight text-neutral-900 dark:text-white flex items-center gap-1">
+                  {language === 'bn' ? 'রক্তবন্ধু' : 'RoktoBondhu'}
+                  <FbVerified className="w-3.5 h-3.5 inline text-[#1877F2]" />
                 </span>
-              )}
+              </div>
             </button>
 
-            {notifDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-80 rounded-xl border border-neutral-200 bg-white p-2 shadow-xl dark:border-neutral-800 dark:bg-neutral-900 z-50">
-                <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 px-3 py-2">
-                  <span className="text-xs font-semibold text-neutral-900 dark:text-white">
-                    {language === 'bn' ? 'নোটিফিকেশন' : 'Notifications'}
-                  </span>
-                  {notifications.length > 0 && (
-                    <button
-                      onClick={clearNotifications}
-                      className="text-[11px] text-neutral-500 hover:text-rose-600 dark:text-neutral-400 transition-colors"
-                    >
-                      {language === 'bn' ? 'সব মুছুন' : 'Clear all'}
-                    </button>
-                  )}
-                </div>
-                <div className="max-h-64 overflow-y-auto divide-y divide-neutral-100 dark:divide-neutral-800">
-                  {notifications.length === 0 ? (
-                    <p className="p-4 text-center text-xs text-neutral-500">
-                      {language === 'bn' ? 'কোনো নতুন নোটিফিকেশন নেই' : 'No notifications'}
-                    </p>
-                  ) : (
-                    notifications.map(n => (
-                      <div
-                        key={n.id}
-                        onClick={() => markNotificationRead(n.id)}
-                        className={`p-2.5 text-xs transition-colors cursor-pointer rounded-lg ${
-                          !n.read ? 'bg-rose-50/60 dark:bg-rose-950/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="font-semibold text-neutral-900 dark:text-neutral-100">{n.title}</span>
-                          <span className="text-[10px] text-neutral-400">{n.timestamp}</span>
-                        </div>
-                        <p className="mt-1 text-neutral-600 dark:text-neutral-300">{n.message}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
+            {/* Facebook-Style Search Input Pill */}
+            <form onSubmit={handleQuickSearch} className="relative hidden md:block">
+              <div className="flex items-center rounded-full bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#1877F2] focus-within:shadow-sm border border-transparent dark:border-neutral-700/50 transition-all">
+                <FbSearch className="h-4 w-4 text-neutral-500 mr-2 shrink-0" />
+                <input
+                  type="text"
+                  value={headerSearchQuery}
+                  onChange={e => setHeaderSearchQuery(e.target.value)}
+                  placeholder={language === 'bn' ? 'রক্তবন্ধু বা রক্তদাতা খুঁজুন...' : 'Search blood donors...'}
+                  className="w-40 lg:w-56 bg-transparent text-xs text-neutral-800 dark:text-white placeholder:text-neutral-400 focus:outline-none"
+                />
               </div>
-            )}
+            </form>
           </div>
 
-          {/* User Account or Login / Register */}
-          {currentUser ? (
+          {/* Zone 2: Facebook-Style Centered Top Tab Navigation Bar */}
+          <nav className="hidden md:flex items-center h-14 space-x-1 lg:space-x-2">
+            {navItems.map(item => {
+              const isActive = activeTab === item.id;
+              const IconComponent = item.Icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className={`relative flex h-14 w-20 lg:w-24 items-center justify-center transition-all ${
+                    isActive
+                      ? 'border-b-[3px] border-[#1877F2] text-[#1877F2]'
+                      : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-white'
+                  }`}
+                  title={language === 'bn' ? item.labelBn : item.labelEn}
+                >
+                  <div className={`p-2 rounded-xl transition-colors ${
+                    isActive ? '' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  }`}>
+                    <IconComponent
+                      size={26}
+                      active={isActive}
+                      className={isActive ? 'text-[#1877F2]' : 'text-neutral-500 dark:text-neutral-400'}
+                    />
+                  </div>
+                  {item.badge && (
+                    <span className="absolute top-2.5 right-4 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600"></span>
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Zone 3: Facebook-Style Circular 40x40 Right Action Buttons */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* 1. Facebook Plus (+) Create Blood Request Button */}
+            <button
+              onClick={() => setPostRequestModalOpen(true)}
+              className="flex h-10 items-center justify-center gap-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 px-3 text-xs font-bold text-neutral-800 dark:text-neutral-200 transition-colors shadow-2xs"
+              title="নতুন রক্তের অনুরোধ পোস্ট করুন"
+            >
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-600 text-white">
+                <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+              </div>
+              <span className="hidden lg:inline">{language === 'bn' ? 'অনুরোধ' : 'Post'}</span>
+            </button>
+
+            {/* 2. Facebook Messenger Icon Button */}
             <div className="relative">
               <button
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 rounded-lg border border-neutral-200 dark:border-neutral-800 p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                onClick={() => setMessengerModalOpen(!messengerModalOpen)}
+                className="relative flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
+                title="মেসেঞ্জার ও হেল্পলাইন"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-200 font-bold text-xs">
-                  {currentUser.bloodGroup}
-                </div>
-                <span className="hidden lg:inline text-xs font-semibold text-neutral-900 dark:text-white max-w-[100px] truncate">
-                  {currentUser.name}
-                </span>
+                <FbMessenger size={20} className="text-neutral-700 dark:text-neutral-200" />
               </button>
 
-              {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-xl border border-neutral-200 bg-white p-2 shadow-xl dark:border-neutral-800 dark:bg-neutral-900 z-50">
-                  <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-800">
-                    <p className="text-xs font-bold text-neutral-900 dark:text-white truncate">{currentUser.name}</p>
-                    <p className="text-[11px] text-neutral-500">{currentUser.phone}</p>
-                    <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-bold">
-                      {currentUser.bloodGroup} ডোনার
+              {/* Messenger Quick Drawer */}
+              {messengerModalOpen && (
+                <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-neutral-200 bg-white p-3 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900 z-50">
+                  <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-2 mb-2 px-1">
+                    <span className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+                      <FbMessenger size={18} className="text-[#1877F2]" />
+                      <span>{language === 'bn' ? 'মেসেঞ্জার হেল্পডেস্ক' : 'Messenger Help'}</span>
                     </span>
+                    <button
+                      onClick={() => setMessengerModalOpen(false)}
+                      className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-white"
+                    >
+                      ✕
+                    </button>
                   </div>
-                  <div className="py-1">
-                    <button
-                      onClick={() => {
-                        setActiveTab('dashboard');
-                        setUserDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg flex items-center gap-2"
+                  <div className="space-y-2 text-xs">
+                    <p className="text-neutral-600 dark:text-neutral-300">
+                      জরুরি রক্তের যেকোনো প্রয়োজনে সরাসরি ফেসবুক বা হোয়াটসঅ্যাপে আমাদের বার্তা দিন:
+                    </p>
+                    <a
+                      href="https://facebook.com"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#1877F2] font-semibold hover:bg-blue-100 transition-colors"
                     >
-                      <User className="h-3.5 w-3.5 text-neutral-500" />
-                      <span>{language === 'bn' ? 'আমার ড্যাশবোর্ড' : 'My Dashboard'}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (isAdmin) {
-                          logoutAdmin();
-                        } else {
-                          loginAsAdmin();
-                          setActiveTab('admin');
-                        }
-                        setUserDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg flex items-center gap-2"
+                      <FbMessenger size={18} />
+                      <span>ফেসবুক মেসেঞ্জারে চ্যাট করুন</span>
+                    </a>
+                    <a
+                      href="https://api.whatsapp.com/send?phone=8801712475286&text=জরুরি%20রক্তের%20সাহায্য%20প্রয়োজন"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-semibold hover:bg-emerald-100 transition-colors"
                     >
-                      <Shield className="h-3.5 w-3.5 text-neutral-500" />
-                      <span>{isAdmin ? (language === 'bn' ? 'অ্যাডমিন থেকে প্রস্থান' : 'Exit Admin') : (language === 'bn' ? 'অ্যাডমিন মোড চালু' : 'Admin Console')}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        logoutUser();
-                        setUserDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg flex items-center gap-2"
-                    >
-                      <LogOut className="h-3.5 w-3.5" />
-                      <span>{language === 'bn' ? 'লগআউট' : 'Sign Out'}</span>
-                    </button>
+                      <span className="text-base">🟢</span>
+                      <span>হোয়াটসঅ্যাপে হেল্পলাইন (01712-475286)</span>
+                    </a>
                   </div>
                 </div>
               )}
             </div>
-          ) : (
-            <div className="flex items-center gap-1.5">
+
+            {/* 3. Facebook Bell Notification Button */}
+            <div className="relative">
+              <button
+                onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
+                className="relative flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
+                title="নোটিফিকেশন"
+              >
+                <FbBell size={20} className="text-neutral-700 dark:text-neutral-200" />
+                {unreadNotifs > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#E41E3F] text-[10px] font-bold text-white shadow-xs">
+                    {language === 'bn' ? toBengaliNumber(unreadNotifs) : unreadNotifs}
+                  </span>
+                )}
+              </button>
+
+              {notifDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-neutral-200 bg-white p-2 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900 z-50">
+                  <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 px-3 py-2">
+                    <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+                      <FbBell size={14} className="text-rose-600" />
+                      <span>{language === 'bn' ? 'নোটিফিকেশন' : 'Notifications'}</span>
+                    </span>
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={clearNotifications}
+                        className="text-[11px] text-neutral-500 hover:text-rose-600 dark:text-neutral-400 transition-colors"
+                      >
+                        {language === 'bn' ? 'সব মুছুন' : 'Clear all'}
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-64 overflow-y-auto divide-y divide-neutral-100 dark:divide-neutral-800">
+                    {notifications.length === 0 ? (
+                      <p className="p-4 text-center text-xs text-neutral-500">
+                        {language === 'bn' ? 'কোনো নতুন নোটিফিকেশন নেই' : 'No notifications'}
+                      </p>
+                    ) : (
+                      notifications.map(n => (
+                        <div
+                          key={n.id}
+                          onClick={() => markNotificationRead(n.id)}
+                          className={`p-2.5 text-xs transition-colors cursor-pointer rounded-xl ${
+                            !n.read ? 'bg-rose-50/70 dark:bg-rose-950/30' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-semibold text-neutral-900 dark:text-neutral-100">{n.title}</span>
+                            <span className="text-[10px] text-neutral-400">{n.timestamp}</span>
+                          </div>
+                          <p className="mt-1 text-neutral-600 dark:text-neutral-300 text-[11px]">{n.message}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 4. Language Switch Circular Button */}
+            <button
+              onClick={() => setLanguage(language === 'bn' ? 'en' : 'bn')}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-300 transition-colors"
+              title="ভাষা পরিবর্তন"
+            >
+              {language === 'bn' ? 'EN' : 'বাং'}
+            </button>
+
+            {/* 5. Dark Mode Circular Button */}
+            <button
+              onClick={toggleDarkMode}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition-colors"
+              title="থিম পরিবর্তন"
+            >
+              {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+
+            {/* 6. User Profile Circle / Facebook-Style Avatar */}
+            {currentUser ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-1.5 rounded-full p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-rose-600 to-[#1877F2] text-white font-black text-xs shadow-xs">
+                    {currentUser.bloodGroup}
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-neutral-500" />
+                </button>
+
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-neutral-200 bg-white p-2 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900 z-50">
+                    <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-800">
+                      <p className="text-xs font-bold text-neutral-900 dark:text-white truncate flex items-center gap-1">
+                        {currentUser.name}
+                        <FbVerified className="w-3.5 h-3.5 inline text-[#1877F2]" />
+                      </p>
+                      <p className="text-[11px] text-neutral-500">{currentUser.phone}</p>
+                      <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-bold">
+                        {currentUser.bloodGroup} রক্তদাতা
+                      </span>
+                    </div>
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          setActiveTab('dashboard');
+                          setUserDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl flex items-center gap-2"
+                      >
+                        <User className="h-3.5 w-3.5 text-neutral-500" />
+                        <span>{language === 'bn' ? 'আমার প্রোফাইল ও ড্যাশবোর্ড' : 'My Dashboard'}</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isAdmin) {
+                            logoutAdmin();
+                          } else {
+                            loginAsAdmin();
+                            setActiveTab('admin');
+                          }
+                          setUserDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl flex items-center gap-2"
+                      >
+                        <Shield className="h-3.5 w-3.5 text-neutral-500" />
+                        <span>{isAdmin ? (language === 'bn' ? 'অ্যাডমিন থেকে প্রস্থান' : 'Exit Admin') : (language === 'bn' ? 'অ্যাডমিন মোড' : 'Admin Console')}</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          logoutUser();
+                          setUserDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl flex items-center gap-2"
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        <span>{language === 'bn' ? 'লগআউট' : 'Sign Out'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
               <button
                 onClick={() => {
                   setAuthModalTab('login');
                   setAuthModalOpen(true);
                 }}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="rounded-full bg-[#1877F2] text-white px-3.5 py-2 text-xs font-bold hover:bg-[#166fe5] shadow-xs transition-colors flex items-center gap-1"
               >
-                {language === 'bn' ? 'লগইন' : 'Login'}
-              </button>
-              <button
-                onClick={() => {
-                  setAuthModalTab('register');
-                  setAuthModalOpen(true);
-                }}
-                className="rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-3 py-1.5 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors"
-              >
-                {language === 'bn' ? 'রক্তদাতা হোন' : 'Join as Donor'}
-              </button>
-            </div>
-          )}
-
-          {/* Admin link shortcut if admin is active */}
-          {isAdmin && (
-            <button
-              onClick={() => setActiveTab('admin')}
-              className="hidden xl:inline-flex items-center gap-1 rounded-md bg-amber-100 dark:bg-amber-950/60 px-2 py-1 text-[11px] font-semibold text-amber-800 dark:text-amber-300"
-            >
-              <Shield className="h-3 w-3" />
-              <span>Admin</span>
-            </button>
-          )}
-
-          {/* Mobile menu trigger */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden rounded-lg p-2 text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-            aria-label="Open menu"
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="border-b border-neutral-200 bg-white px-4 py-4 md:hidden dark:border-neutral-800 dark:bg-neutral-900 space-y-2">
-          {navItems.map(item => {
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg text-left ${
-                  isActive
-                    ? 'text-rose-600 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-400'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <item.icon className="h-4 w-4" />
-                  <span>{language === 'bn' ? item.labelBn : item.labelEn}</span>
-                </div>
-                {item.badge && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-600 text-white">
-                    {language === 'bn' ? 'জরুরি' : 'Urgent'}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-
-          <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
-            <button
-              onClick={() => {
-                setPostRequestModalOpen(true);
-                setMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-700"
-            >
-              <PlusCircle className="h-4 w-4" />
-              <span>{language === 'bn' ? 'জরুরি রক্তের অনুরোধ করুন' : 'Request Urgent Blood'}</span>
-            </button>
-            {currentUser && (
-              <button
-                onClick={() => {
-                  setActiveTab('dashboard');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg"
-              >
-                <User className="h-4 w-4 text-neutral-500" />
-                <span>{language === 'bn' ? 'আমার ড্যাশবোর্ড' : 'My Dashboard'}</span>
+                <span>{language === 'bn' ? 'লগইন' : 'Log In'}</span>
               </button>
             )}
           </div>
         </div>
-      )}
-    </header>
+      </header>
+
+      {/* Facebook-Style Mobile Bottom Navigation Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-around h-14 px-2 shadow-lg">
+        {navItems.map(item => {
+          const isActive = activeTab === item.id;
+          const IconComponent = item.Icon;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`relative flex flex-col items-center justify-center flex-1 h-full transition-all ${
+                isActive ? 'text-[#1877F2]' : 'text-neutral-500 dark:text-neutral-400'
+              }`}
+            >
+              <div className="relative">
+                <IconComponent
+                  size={24}
+                  active={isActive}
+                  className={isActive ? 'text-[#1877F2]' : 'text-neutral-500 dark:text-neutral-400'}
+                />
+                {item.badge && (
+                  <span className="absolute -top-1 -right-1.5 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600"></span>
+                  </span>
+                )}
+              </div>
+              <span className={`text-[10px] mt-0.5 font-medium ${isActive ? 'font-bold text-[#1877F2]' : ''}`}>
+                {language === 'bn' ? item.labelBn : item.labelEn}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </>
   );
 };

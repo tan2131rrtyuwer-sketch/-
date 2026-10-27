@@ -28,6 +28,17 @@ export const Footer: React.FC = () => {
               <PhoneCall className="h-4 w-4" />
               <span className="font-semibold">হটলাইন: 01712-475286 (২৪/৭)</span>
             </div>
+            <div className="pt-2">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1877F2]/20 hover:bg-[#1877F2]/30 text-blue-400 text-xs font-semibold transition-colors border border-blue-500/30"
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1877F2] text-white text-[10px] font-black">f</span>
+                <span>রক্তবন্ধু ফেসবুক গ্রুপে যুক্ত হোন</span>
+              </a>
+            </div>
           </div>
 
           {/* Quick Links */}

@@ -22,6 +22,19 @@ import {
   Sparkles,
   Award,
 } from 'lucide-react';
+import {
+  FbSearch,
+  FbLike,
+  FbComment,
+  FbShare,
+  FbVerified,
+  FbDots,
+  FbPublic,
+  FbReactionLike,
+  FbReactionLove,
+  FbReactionCare,
+  FbLogo,
+} from '../components/FacebookIcons';
 
 export const HomeView: React.FC = () => {
   const {
@@ -104,8 +117,8 @@ export const HomeView: React.FC = () => {
               <div className="rounded-2xl border border-rose-100 bg-white p-4 sm:p-5 shadow-xl shadow-rose-950/5 dark:border-neutral-800 dark:bg-neutral-900/90">
                 <form onSubmit={handleHeroSearch} className="space-y-3">
                   <div className="flex items-center gap-2 pb-1 text-xs font-bold text-neutral-900 dark:text-white">
-                    <Search className="h-4 w-4 text-rose-600" />
-                    <span>{language === 'bn' ? 'দ্রুত রক্তদাতা সার্চ' : 'Quick Blood Donor Search'}</span>
+                    <FbSearch className="h-4 w-4 text-[#1877F2]" />
+                    <span>{language === 'bn' ? 'ফেসবুক স্টাইল দ্রুত রক্তদাতা সার্চ' : 'Quick Blood Donor Search'}</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
@@ -117,7 +130,7 @@ export const HomeView: React.FC = () => {
                       <select
                         value={selectedGroup}
                         onChange={e => setSelectedGroup(e.target.value as BloodGroup)}
-                        className="w-full rounded-xl border border-neutral-300 bg-neutral-50/50 px-3 py-2.5 text-sm font-bold text-neutral-800 focus:border-rose-500 focus:bg-white focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                        className="w-full rounded-xl border border-neutral-300 bg-neutral-50/50 px-3 py-2.5 text-sm font-bold text-neutral-800 focus:border-[#1877F2] focus:bg-white focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
                       >
                         <option value="">{language === 'bn' ? 'সব গ্রুপ' : 'All Groups'}</option>
                         {bloodGroups.map(bg => (
@@ -136,7 +149,7 @@ export const HomeView: React.FC = () => {
                       <select
                         value={selectedDistrict}
                         onChange={e => setSelectedDistrict(e.target.value)}
-                        className="w-full rounded-xl border border-neutral-300 bg-neutral-50/50 px-3 py-2.5 text-sm text-neutral-800 focus:border-rose-500 focus:bg-white focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                        className="w-full rounded-xl border border-neutral-300 bg-neutral-50/50 px-3 py-2.5 text-sm text-neutral-800 focus:border-[#1877F2] focus:bg-white focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
                       >
                         <option value="">{language === 'bn' ? 'সমগ্র বাংলাদেশ' : 'All Districts'}</option>
                         {ALL_DISTRICTS.map(d => (
@@ -151,9 +164,9 @@ export const HomeView: React.FC = () => {
                     <div className="sm:col-span-3 flex items-end">
                       <button
                         type="submit"
-                        className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 py-2.5 px-4 text-sm font-semibold text-white shadow-md shadow-rose-600/30 hover:bg-rose-700 active:scale-95 transition-all"
+                        className="w-full flex items-center justify-center gap-1.5 rounded-full bg-[#1877F2] hover:bg-[#166fe5] py-2.5 px-4 text-sm font-bold text-white shadow-md active:scale-95 transition-all"
                       >
-                        <Search className="h-4 w-4" />
+                        <FbSearch className="h-4 w-4" />
                         <span>{language === 'bn' ? 'সার্চ করুন' : 'Search'}</span>
                       </button>
                     </div>
@@ -202,17 +215,18 @@ export const HomeView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Floating verified badge */}
-              <div className="absolute -bottom-4 -left-3 rounded-xl bg-white dark:bg-neutral-900 p-3 shadow-lg border border-neutral-200 dark:border-neutral-800 flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                  <CheckCircle2 className="h-5 w-5" />
+              {/* Floating Facebook verified badge */}
+              <div className="absolute -bottom-4 -left-3 rounded-2xl bg-white dark:bg-neutral-900 p-3 shadow-xl border border-neutral-200 dark:border-neutral-800 flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-[#1877F2]">
+                  <FbVerified size={22} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-neutral-900 dark:text-white">
-                    {language === 'bn' ? '১০০% ভেরিফাইড ডোনার' : '100% Verified Community'}
+                  <p className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1">
+                    <span>{language === 'bn' ? '১০০% ভেরিফাইড ডোনার' : '100% Verified Community'}</span>
+                    <FbVerified className="w-3.5 h-3.5 inline text-[#1877F2]" />
                   </p>
                   <p className="text-[10px] text-neutral-500">
-                    {language === 'bn' ? 'ওটিপি ও জেলা ভিত্তিক প্রোফাইল' : 'OTP-backed real phone contacts'}
+                    {language === 'bn' ? 'ফেসবুক ও মোবাইল ওটিপি যাচাইকৃত' : 'OTP & profile verified real donors'}
                   </p>
                 </div>
               </div>
@@ -298,66 +312,120 @@ export const HomeView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {urgentRequests.map(req => (
-            <div
-              key={req.id}
-              className="flex flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 transition-all hover:border-rose-300 dark:hover:border-rose-900"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                      {req.patientName}
-                    </h3>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      {req.hospitalName}, {req.district}
-                    </p>
+          {urgentRequests.map(req => {
+            const isCritical = req.urgency === 'critical_today';
+            return (
+              <div
+                key={req.id}
+                className="flex flex-col justify-between rounded-2xl border border-neutral-200 bg-white shadow-xs dark:border-neutral-800 dark:bg-neutral-900 transition-all overflow-hidden"
+              >
+                {/* Facebook Post Header */}
+                <div className="p-4 pb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-rose-600 to-[#1877F2] text-white font-black text-xs shadow-2xs">
+                      {req.bloodGroup}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
+                          {req.postedByName}
+                        </h4>
+                        <FbVerified className="w-3 h-3 text-[#1877F2]" />
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] text-neutral-400 mt-0.5">
+                        <span>{req.hospitalName}</span>
+                        <span>•</span>
+                        <FbPublic className="w-2.5 h-2.5 text-neutral-400 inline" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-extrabold text-base border border-rose-200 dark:border-rose-900">
-                    {req.bloodGroup}
-                  </div>
+                  <FbDots size={16} className="text-neutral-400" />
                 </div>
 
-                <div className="mt-4 space-y-2 text-xs text-neutral-600 dark:text-neutral-400">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                      {language === 'bn' ? 'প্রয়োজন:' : 'Needed:'}
-                    </span>
-                    <span className="text-rose-600 dark:text-rose-400 font-bold">
-                      {language === 'bn' ? toBengaliNumber(req.bagsNeeded) : req.bagsNeeded} ব্যাগ
-                    </span>
-                    <span>•</span>
-                    <span className="font-semibold text-amber-600">
-                      {req.urgency === 'critical_today'
-                        ? (language === 'bn' ? 'আজই দরকার' : 'Today')
-                        : (language === 'bn' ? 'জরুরি' : 'Urgent')}
-                    </span>
+                {/* Blood Details Box */}
+                <div className="px-4 py-2 space-y-2">
+                  <div className="rounded-xl bg-rose-50 dark:bg-rose-950/40 p-3 border border-rose-100 dark:border-rose-900/40 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
+                        {isCritical ? '🚨 আজই জরুরি' : '⏱️ জরুরি রক্তদান'}
+                      </span>
+                      <h4 className="text-sm font-black text-neutral-900 dark:text-white">
+                        {req.patientName}
+                      </h4>
+                    </div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-600 text-white font-black text-sm shadow-xs">
+                      {req.bloodGroup}
+                    </div>
                   </div>
 
-                  <p className="line-clamp-2 text-neutral-600 dark:text-neutral-300 text-xs">
-                    {req.reason}
+                  <p className="line-clamp-2 text-neutral-600 dark:text-neutral-300 text-xs italic">
+                    "{req.reason}"
                   </p>
+
+                  <div className="text-[11px] text-neutral-500 flex items-center justify-between">
+                    <span>প্রয়োজন: <strong className="text-rose-600">{toBengaliNumber(req.bagsNeeded)} ব্যাগ</strong></span>
+                    <span>{req.district}</span>
+                  </div>
+                </div>
+
+                {/* Facebook Reactions Counter */}
+                <div className="px-4 py-1.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500">
+                  <div className="flex items-center gap-1">
+                    <div className="flex items-center">
+                      <FbReactionLike size={16} className="z-20" />
+                      <FbReactionLove size={16} className="-ml-1 z-10" />
+                      <FbReactionCare size={16} className="-ml-1" />
+                    </div>
+                    <span className="text-xs font-semibold ml-0.5">{toBengaliNumber(req.bagsNeeded * 18 + 12)}</span>
+                  </div>
+                  <span>{toBengaliNumber(req.bagsNeeded * 3 + 2)} টি শেয়ার</span>
+                </div>
+
+                {/* Facebook 3-Button Action Row */}
+                <div className="px-2 py-1 border-t border-neutral-100 dark:border-neutral-800 grid grid-cols-3 gap-1 text-[11px] text-neutral-600 dark:text-neutral-300">
+                  <button
+                    onClick={() => setActiveTab('requests')}
+                    className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 font-semibold"
+                  >
+                    <FbLike size={15} />
+                    <span>লাইক</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('requests')}
+                    className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 font-semibold"
+                  >
+                    <FbComment size={15} />
+                    <span>মন্তব্য</span>
+                  </button>
+                  <button
+                    onClick={() => handleWhatsAppShare(req)}
+                    className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 font-semibold"
+                  >
+                    <FbShare size={15} />
+                    <span>শেয়ার</span>
+                  </button>
+                </div>
+
+                {/* Call CTA */}
+                <div className="p-3 pt-2 bg-neutral-50 dark:bg-neutral-800/40 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
+                  <a
+                    href={`tel:${req.contactPhone}`}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-full bg-rose-600 py-1.5 text-xs font-bold text-white hover:bg-rose-700 transition-colors shadow-2xs"
+                  >
+                    <Phone className="h-3 w-3" />
+                    <span>কল: {req.contactPhone}</span>
+                  </a>
+                  <button
+                    onClick={() => handleWhatsAppShare(req)}
+                    className="flex items-center justify-center rounded-full bg-emerald-600 text-white px-2.5 py-1.5 text-xs font-bold hover:bg-emerald-700 transition-colors"
+                    title="WhatsApp"
+                  >
+                    🟢
+                  </button>
                 </div>
               </div>
-
-              <div className="mt-5 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
-                <a
-                  href={`tel:${req.contactPhone}`}
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-rose-600 py-2 text-xs font-bold text-white hover:bg-rose-700 transition-colors shadow-sm"
-                >
-                  <Phone className="h-3.5 w-3.5" />
-                  <span>{language === 'bn' ? 'সরাসরি কল' : 'Call Now'}</span>
-                </a>
-                <button
-                  onClick={() => handleWhatsAppShare(req)}
-                  className="flex items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-700 p-2 text-neutral-700 dark:text-neutral-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 dark:hover:bg-emerald-950 transition-colors"
-                  title="Share on WhatsApp"
-                >
-                  <Share2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
