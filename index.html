@@ -12,8 +12,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('roktobondhu_theme');
+          if (saved === '"dark"' || saved === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
   </head>
-  <body class="bg-neutral-50 text-neutral-900 antialiased selection:bg-rose-500 selection:text-white">
+  <body class="bg-[#F0F2F5] dark:bg-[#18191A] text-neutral-900 dark:text-[#E4E6EB] antialiased selection:bg-rose-500 selection:text-white">
     <div id="root">
       <!-- Fallback container that displays helpful instructions if JavaScript is blocked or cannot load -->
       <div id="initial-loader" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; font-family: 'Hind Siliguri', 'Plus Jakarta Sans', sans-serif; background: #fafafa; color: #171717;">

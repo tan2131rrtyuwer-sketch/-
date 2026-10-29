@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 0. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isConversationParticipant(cId) {
+      return isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/conversations/$(cId)).data.participantIds;
+    }
+
+    // 1. Users Collection (Profile for chat discovery & donor identity)
+    match /users/{userId} {
+      allow get, list: if isSignedIn();
+      allow create: if isOwner(userId) &&
+        isValidId(userId) &&
+        incoming().userId == request.auth.uid &&
+        incoming().name is string && incoming().name.size() <= 100 &&
+        incoming().bloodGroup is string && incoming().bloodGroup.size() <= 10;
+      allow update: if isOwner(userId) &&
+        incoming().userId == existing().userId;
+      allow delete: if false;
+    }
+
+    // 2. Conversations Collection (1-on-1 private chat sessions)
+    match /conversations/{conversationId} {
+      allow get: if isSignedIn() && request.auth.uid in existing().participantIds;
+      allow list: if isSignedIn() && request.auth.uid in resource.data.participantIds;
+
+      allow create: if isSignedIn() &&
+        isValidId(conversationId) &&
+        request.auth.uid in incoming().participantIds &&
+        incoming().participantIds.size() == 2;
+
+      allow update: if isSignedIn() &&
+        request.auth.uid in existing().participantIds &&
+        incoming().participantIds == existing().participantIds &&
+        (
+          // Action 1: New message metadata update
+          incoming().diff(existing()).affectedKeys().hasOnly(['lastMessage', 'lastMessageSenderId', 'lastMessageAt', 'updatedAt', 'unreadCounts']) ||
+          // Action 2: Block/unblock conversation
+          incoming().diff(existing()).affectedKeys().hasOnly(['blockedBy', 'updatedAt'])
+        );
+
+      allow delete: if false;
+
+      // 3. Subcollection: Messages
+      match /messages/{messageId} {
+        allow get, list: if isConversationParticipant(conversationId);
+
+        allow create: if isConversationParticipant(conversationId) &&
+          isValidId(messageId) &&
+          incoming().senderId == request.auth.uid &&
+          incoming().text is string &&
+          incoming().text.size() > 0 &&
+          incoming().text.size() <= 2000;
+
+        allow update: if isConversationParticipant(conversationId) &&
+          // Only recipient can update message status to delivered / read
+          existing().senderId != request.auth.uid &&
+          incoming().senderId == existing().senderId &&
+          incoming().text == existing().text &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'readAt']);
+
+        allow delete: if false;
+      }
+    }
+
+    // 4. Reports Collection
+    match /reports/{reportId} {
+      allow create: if isSignedIn() &&
+        isValidId(reportId) &&
+        incoming().reporterId == request.auth.uid &&
+        incoming().reason is string && incoming().reason.size() <= 200;
+      allow read, update, delete: if false;
+    }
+  }
+}

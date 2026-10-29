@@ -9,6 +9,7 @@ import {
   BloodGroup,
   DonationRecord,
 } from '../types';
+import { ChatUser, Conversation } from '../types/chat';
 import {
   INITIAL_DONORS,
   INITIAL_REQUESTS,
@@ -16,6 +17,15 @@ import {
   INITIAL_STORIES,
 } from '../data/mockData';
 import { safeStorage } from '../utils/storage';
+import { auth, googleProvider } from '../services/firebase';
+import {
+  signInWithPopup,
+  signInAnonymously,
+  signOut,
+  onAuthStateChanged,
+  User as FirebaseUser,
+} from 'firebase/auth';
+import { chatService } from '../services/chatService';
 
 interface AppContextType {
   donors: Donor[];
@@ -23,6 +33,7 @@ interface AppContextType {
   hospitals: Hospital[];
   stories: SuccessStory[];
   currentUser: Donor | null;
+  firebaseUser: FirebaseUser | null;
   isAdmin: boolean;
   language: 'bn' | 'en';
   darkMode: boolean;
@@ -33,6 +44,7 @@ interface AppContextType {
   setLanguage: (lang: 'bn' | 'en') => void;
   toggleDarkMode: () => void;
   loginUser: (phone: string) => boolean;
+  loginWithGoogle: () => Promise<boolean>;
   logoutUser: () => void;
   loginAsAdmin: () => void;
   logoutAdmin: () => void;
@@ -64,6 +76,14 @@ interface AppContextType {
   presetDistrict: string;
   setPresetDistrict: (dist: string) => void;
   navigateToSearchWithFilters: (bloodGroup?: BloodGroup | '', district?: string) => void;
+  // Global Toast for user actions
+  toast: { message: string; type: 'success' | 'info' | 'error' } | null;
+  showToast: (message: string, type?: 'success' | 'info' | 'error') => void;
+  // Real-time Chat state
+  activeChatPartner: ChatUser | null;
+  setActiveChatPartner: (partner: ChatUser | null) => void;
+  startChatWithDonor: (donor: Donor | ChatUser) => void;
+  totalChatUnreadCount: number;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -84,16 +104,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 2. Dark Mode
   const [darkMode, setDarkMode] = useState<boolean>(() => {
-    return safeStorage.getItem<string>(LOCAL_STORAGE_PREFIX + 'theme', 'light') === 'dark';
+    const saved = safeStorage.getItem<string>(LOCAL_STORAGE_PREFIX + 'theme', 'light');
+    return saved === 'dark';
   });
 
   useEffect(() => {
     try {
       if (darkMode) {
         document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.body.classList.add('dark');
         safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'theme', 'dark');
       } else {
         document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.body.classList.remove('dark');
         safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'theme', 'light');
       }
     } catch {
@@ -129,23 +154,71 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'requests', requests);
   }, [requests]);
 
-  // 5. Current User
+  // 5. Firebase Auth & Current User
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+
   const [currentUser, setCurrentUser] = useState<Donor | null>(() => {
     const saved = safeStorage.getItem<Donor>(LOCAL_STORAGE_PREFIX + 'current_user', null);
     if (saved && typeof saved === 'object' && saved.id) {
       return saved;
     }
-    // Default to pre-seeded donor-1 for great initial demo experience
     return INITIAL_DONORS[0];
   });
 
+  // Track Firebase Auth state & auto-authenticate anonymously for security rules
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async user => {
+      setFirebaseUser(user);
+      if (!user) {
+        try {
+          await signInAnonymously(auth);
+        } catch (e) {
+          console.warn('Anonymous auth initialization:', e);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Sync current user with Firestore profile
   useEffect(() => {
     if (currentUser) {
       safeStorage.setItem(LOCAL_STORAGE_PREFIX + 'current_user', currentUser);
+      const uid = firebaseUser?.uid || currentUser.id;
+      chatService.syncUserProfile({
+        userId: uid,
+        name: currentUser.name,
+        phone: currentUser.phone,
+        bloodGroup: currentUser.bloodGroup,
+        district: currentUser.district,
+        upazila: currentUser.upazila,
+        isAvailable: currentUser.isAvailable,
+        isOnline: true,
+      });
     } else {
       safeStorage.removeItem(LOCAL_STORAGE_PREFIX + 'current_user');
     }
-  }, [currentUser]);
+  }, [currentUser, firebaseUser]);
+
+  // Seed initial mock donors into Firestore users collection for discovery
+  useEffect(() => {
+    const seededKey = LOCAL_STORAGE_PREFIX + 'firestore_seeded_v1';
+    if (!safeStorage.getItem(seededKey, false)) {
+      INITIAL_DONORS.forEach(d => {
+        chatService.syncUserProfile({
+          userId: d.id,
+          name: d.name,
+          phone: d.phone,
+          bloodGroup: d.bloodGroup,
+          district: d.district,
+          upazila: d.upazila,
+          isAvailable: d.isAvailable,
+        });
+      });
+      safeStorage.setItem(seededKey, true);
+    }
+  }, []);
 
   // 6. Admin
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
@@ -218,10 +291,57 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [presetBloodGroup, setPresetBloodGroup] = useState<BloodGroup | ''>('');
   const [presetDistrict, setPresetDistrict] = useState<string>('');
 
+  // Global Toast
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(prev => (prev?.message === message ? null : prev));
+    }, 3200);
+  };
+
   const navigateToSearchWithFilters = (bg?: BloodGroup | '', dist?: string) => {
     if (bg !== undefined) setPresetBloodGroup(bg);
     if (dist !== undefined) setPresetDistrict(dist || '');
     setActiveTab('search');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Real-time Chat State
+  const [activeChatPartner, setActiveChatPartner] = useState<ChatUser | null>(null);
+  const [totalChatUnreadCount, setTotalChatUnreadCount] = useState<number>(0);
+
+  // Subscribe to unread messages across user conversations
+  useEffect(() => {
+    const uid = firebaseUser?.uid || currentUser?.id;
+    if (!uid) return;
+
+    const unsubscribe = chatService.subscribeToConversations(uid, convList => {
+      let unreadSum = 0;
+      convList.forEach(c => {
+        unreadSum += c.unreadCounts?.[uid] || 0;
+      });
+      setTotalChatUnreadCount(unreadSum);
+    });
+
+    return () => unsubscribe();
+  }, [firebaseUser, currentUser]);
+
+  const startChatWithDonor = (donor: any) => {
+    const partnerId = donor.userId || donor.id;
+    const partner: ChatUser = {
+      userId: partnerId,
+      name: donor.name,
+      bloodGroup: donor.bloodGroup,
+      district: donor.district || 'বাংলাদেশ',
+      upazila: donor.upazila || '',
+      phone: donor.phone || '',
+      avatarUrl: donor.avatarUrl || '',
+      isAvailable: donor.isAvailable !== false,
+    };
+    setActiveChatPartner(partner);
+    setActiveTab('chat');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -235,19 +355,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return false;
       }
       setCurrentUser(found);
+      showToast(language === 'bn' ? `স্বাগতম, ${found.name}!` : `Welcome, ${found.name}!`);
       return true;
     }
     return false;
   };
 
+  const loginWithGoogle = async (): Promise<boolean> => {
+    try {
+      const res = await signInWithPopup(auth, googleProvider);
+      const user = res.user;
+      if (user) {
+        const existingDonor = donors.find(d => d.email === user.email);
+        if (existingDonor) {
+          setCurrentUser(existingDonor);
+        } else {
+          const newDonor: Donor = {
+            id: user.uid,
+            name: user.displayName || 'Google User',
+            phone: user.phoneNumber || '01700000000',
+            email: user.email || '',
+            bloodGroup: 'O+',
+            division: 'ঢাকা',
+            district: 'ঢাকা',
+            upazila: 'মিরপুর',
+            address: 'ঢাকা',
+            lastDonationDate: '',
+            isAvailable: true,
+            isVerified: true,
+            totalDonations: 0,
+            badge: 'bronze',
+            joinedDate: new Date().toISOString().split('T')[0],
+            reportCount: 0,
+          };
+          setDonors(prev => [newDonor, ...prev]);
+          setCurrentUser(newDonor);
+        }
+        showToast(language === 'bn' ? `গুগল লগইন সফল হয়েছে: ${user.displayName || 'User'}` : 'Google Login successful');
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      showToast(err.message || 'গুগল লগইন ব্যর্থ হয়েছে', 'error');
+      return false;
+    }
+  };
+
   const logoutUser = () => {
+    signOut(auth).catch(() => {});
     setCurrentUser(null);
+    showToast(language === 'bn' ? 'লগআউট সফল হয়েছে' : 'Signed out');
   };
 
   const registerDonor = (
     donorData: Omit<Donor, 'id' | 'joinedDate' | 'badge' | 'totalDonations' | 'reportCount' | 'isVerified'>
   ): Donor => {
-    const newId = `donor-${Date.now()}`;
+    const newId = firebaseUser?.uid || `donor-${Date.now()}`;
     const newDonor: Donor = {
       ...donorData,
       id: newId,
@@ -255,13 +418,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       badge: 'bronze',
       totalDonations: donorData.lastDonationDate ? 1 : 0,
       reportCount: 0,
-      isVerified: true, // verified through our simulated OTP!
+      isVerified: true,
     };
 
     setDonors(prev => [newDonor, ...prev]);
     setCurrentUser(newDonor);
 
-    // Add welcome notification
     setNotifications(prev => [
       {
         id: `notif-${Date.now()}`,
@@ -300,32 +462,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newReq: BloodRequest = {
       ...reqData,
       id: `req-${Date.now()}`,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString().split('T')[0],
       status: 'open',
       isVerified: true,
-      postedByUserId: currentUser ? currentUser.id : undefined,
+      postedByUserId: currentUser?.id,
     };
-
     setRequests(prev => [newReq, ...prev]);
-
-    // Send broadcast simulated notification
-    setNotifications(prev => [
-      {
-        id: `notif-${Date.now()}`,
-        title: `নতুন জরুরি রক্তের অনুরোধ (${newReq.bloodGroup})`,
-        message: `${newReq.hospitalName}, ${newReq.district}-এ ${newReq.bagsNeeded} ব্যাগ ${newReq.bloodGroup} রক্ত প্রয়োজন।`,
-        timestamp: 'এইমাত্র',
-        read: false,
-        type: 'urgent_request',
-      },
-      ...prev,
-    ]);
+    showToast(language === 'bn' ? 'জরুরি রক্তের অনুরোধ সফলভাবে পোস্ট হয়েছে!' : 'Blood request posted!');
   };
 
   const markRequestFulfilled = (id: string) => {
-    setRequests(prev =>
-      prev.map(r => (r.id === id ? { ...r, status: 'fulfilled' as const } : r))
-    );
+    setRequests(prev => prev.map(r => (r.id === id ? { ...r, status: 'fulfilled' } : r)));
+    showToast(language === 'bn' ? 'রক্তের অনুরোধ সম্পন্ন হিসেবে চিহ্নিত হয়েছে।' : 'Request marked fulfilled.');
   };
 
   const deleteRequest = (id: string) => {
@@ -333,51 +481,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const reportDonor = (report: Omit<ReportItem, 'id' | 'createdAt' | 'status'>) => {
-    const newRep: ReportItem = {
+    const newReport: ReportItem = {
       ...report,
       id: `rep-${Date.now()}`,
       createdAt: new Date().toISOString(),
       status: 'pending',
     };
-    setReports(prev => [newRep, ...prev]);
-    setDonors(prev =>
-      prev.map(d => (d.id === report.donorId ? { ...d, reportCount: d.reportCount + 1 } : d))
-    );
+    setReports(prev => [newReport, ...prev]);
+    showToast(language === 'bn' ? 'রিপোর্ট জমা দেওয়া হয়েছে।' : 'Report submitted.');
   };
 
   const resolveReport = (id: string, action: 'dismiss' | 'block') => {
     setReports(prev =>
-      prev.map(r => (r.id === id ? { ...r, status: action === 'block' ? 'resolved' : 'dismissed' } : r))
+      prev.map(r => (r.id === id ? { ...r, status: action === 'dismiss' ? 'dismissed' : 'resolved' } : r))
     );
-    if (action === 'block') {
-      const rep = reports.find(r => r.id === id);
-      if (rep) {
-        setDonors(prev =>
-          prev.map(d => (d.id === rep.donorId ? { ...d, isBlocked: true, isAvailable: false } : d))
-        );
-      }
-    }
   };
 
   const addDonationRecord = (record: Omit<DonationRecord, 'id'>) => {
     if (!currentUser) return;
-    const newTotal = currentUser.totalDonations + record.units;
-    let newBadge = currentUser.badge;
-    if (newTotal >= 20) newBadge = 'platinum';
-    else if (newTotal >= 10) newBadge = 'gold';
-    else if (newTotal >= 4) newBadge = 'silver';
-    else newBadge = 'bronze';
-
-    const updatedUser: Donor = {
+    const newTotal = currentUser.totalDonations + 1;
+    const updated: Donor = {
       ...currentUser,
-      lastDonationDate: record.date,
       totalDonations: newTotal,
-      badge: newBadge,
-      isAvailable: false, // After donation, donor enters cooldown
+      lastDonationDate: record.date,
+      isAvailable: false,
     };
-
-    setCurrentUser(updatedUser);
-    setDonors(prev => prev.map(d => (d.id === currentUser.id ? updatedUser : d)));
+    setCurrentUser(updated);
+    setDonors(prev => prev.map(d => (d.id === updated.id ? updated : d)));
 
     setNotifications(prev => [
       {
@@ -411,6 +541,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         hospitals: INITIAL_HOSPITALS,
         stories: INITIAL_STORIES,
         currentUser,
+        firebaseUser,
         isAdmin,
         language,
         darkMode,
@@ -421,6 +552,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setLanguage,
         toggleDarkMode,
         loginUser,
+        loginWithGoogle,
         logoutUser,
         loginAsAdmin,
         logoutAdmin,
@@ -450,6 +582,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         presetDistrict,
         setPresetDistrict,
         navigateToSearchWithFilters,
+        toast,
+        showToast,
+        activeChatPartner,
+        setActiveChatPartner,
+        startChatWithDonor,
+        totalChatUnreadCount,
       }}
     >
       {children}

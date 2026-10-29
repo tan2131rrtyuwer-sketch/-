@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Public user profile and blood donor identity for chat discovery",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "bloodGroup": { "type": "string", "maxLength": 10 },
+        "district": { "type": "string", "maxLength": 50 },
+        "upazila": { "type": "string", "maxLength": 50 },
+        "avatarUrl": { "type": "string", "maxLength": 500 },
+        "isAvailable": { "type": "boolean" },
+        "isOnline": { "type": "boolean" },
+        "lastSeen": { "type": "string", "maxLength": 60 },
+        "createdAt": { "type": "string", "maxLength": 60 },
+        "updatedAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["userId", "name", "bloodGroup", "district"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "One-to-one private conversation between two users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "participantIds": {
+          "type": "array",
+          "description": "IDs of the two participants"
+        },
+        "lastMessage": { "type": "string", "maxLength": 1000 },
+        "lastMessageSenderId": { "type": "string", "maxLength": 128 },
+        "lastMessageAt": { "type": "string", "maxLength": 60 },
+        "createdAt": { "type": "string", "maxLength": 60 },
+        "updatedAt": { "type": "string", "maxLength": 60 },
+        "blockedBy": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["participantIds", "createdAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Individual message sent within a conversation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "conversationId": { "type": "string", "maxLength": 128 },
+        "senderId": { "type": "string", "maxLength": 128 },
+        "senderName": { "type": "string", "maxLength": 100 },
+        "text": { "type": "string", "maxLength": 2000, "minLength": 1 },
+        "messageType": { "type": "string", "enum": ["text", "emergency", "location"], "maxLength": 20 },
+        "status": { "type": "string", "enum": ["sent", "delivered", "read"], "maxLength": 20 },
+        "createdAt": { "type": "string", "maxLength": 60 },
+        "readAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["senderId", "text", "conversationId"]
+    },
+    "ChatReport": {
+      "title": "ChatReport",
+      "description": "Report filed by a user against abusive behavior or fake donors",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "reporterId": { "type": "string", "maxLength": 128 },
+        "reportedUserId": { "type": "string", "maxLength": 128 },
+        "reason": { "type": "string", "maxLength": 200 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["reporterId", "reportedUserId", "reason"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Public profile of users and donors"
+    },
+    "/conversations/{conversationId}": {
+      "schema": "Conversation",
+      "description": "Metadata for 1-to-1 conversations"
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages sent in a conversation"
+    },
+    "/reports/{reportId}": {
+      "schema": "ChatReport",
+      "description": "Reports filed by users"
+    }
+  }
+}

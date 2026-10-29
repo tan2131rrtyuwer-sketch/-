@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+  html.dark, :root.dark, [data-theme="dark"] {
+    color-scheme: dark;
+  }
   body {
     font-family: 'Hind Siliguri', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   }

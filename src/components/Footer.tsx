@@ -33,10 +33,10 @@ export const Footer: React.FC = () => {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1877F2]/20 hover:bg-[#1877F2]/30 text-blue-400 text-xs font-semibold transition-colors border border-blue-500/30"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors border border-slate-700"
               >
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1877F2] text-white text-[10px] font-black">f</span>
-                <span>রক্তবন্ধু ফেসবুক গ্রুপে যুক্ত হোন</span>
+                <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-500" />
+                <span>{language === 'bn' ? 'রক্তদাতা স্বেচ্ছাসেবক কমিউনিটি' : 'Volunteer Community'}</span>
               </a>
             </div>
           </div>
